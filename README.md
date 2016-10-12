@@ -7,7 +7,7 @@ Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
 
 Config file
 ```
-<onevalue port="8221" thread_num="15" hash_value_max="240" work_dir="mydb">
+<onevalue port="8221" thread_num="8" hash_value_max="240" work_dir="mydb">
   <db_node name="db1" hash_min="0" hash_max="19"></db_node>
   <db_node name="db2" hash_min="20" hash_max="39"></db_node>
   <db_node name="db3" hash_min="40" hash_max="59"></db_node>
@@ -30,7 +30,7 @@ do
  nohup ./redis-benchmark -h [host] -p [port] -t get,set -r 1000000 -n 1000000 -q > ${i}.log 2>&1 &
 done
 ```
-Save to test.sh and exectuete.
+Save to test.sh and execute.
 
 View result
 ```
