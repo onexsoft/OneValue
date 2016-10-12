@@ -23,7 +23,7 @@ Config file
 </onevalue>
 ```
 
-Test script
+Test script(GET, SET)
 ```
 for i in {1..5}
 do
@@ -49,8 +49,35 @@ GET: 81017.58 requests per second
 
 SET: 60459.49 requests per second
 GET: 87943.01 requests per second
+
+Summary: SET is 30W+/s, GET is 40W+/s
 ```
 
-Summary
-SET: 30W+/s, GET:40W+/s
+Pipeline test script(GET, SET)
+```
+for i in {1..5}
+do
+ nohup ./redis-benchmark -h [host] -p [port] -t get,set -r 1000000 -n 1000000 -q -P 10 > ${i}.log 2>&1 &
+done
+```
 
+View result
+```
+cat *.log
+SET: 102564.10 requests per second
+GET: 206654.25 requests per second
+
+SET: 103444.71 requests per second
+GET: 204582.66 requests per second
+
+SET: 103745.20 requests per second
+GET: 202634.25 requests per second
+
+SET: 103939.30 requests per second
+GET: 202470.12 requests per second
+
+SET: 102511.53 requests per second
+GET: 206611.56 requests per second
+
+Summary: SET is 50W+/s, GET is 100W+/s
+```
