@@ -1,11 +1,11 @@
-# OneValue
+ï»¿# OneValue
 A High Performance (About 1 million QPS) Persistent Key-Value Store Based on Redis Protocol
 
 # Performance test
-Environment:
-Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
+Environment: Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
 
-Config file:
+## Config file
+```
 <onevalue port="8221" thread_num="15" hash_value_max="240" work_dir="mydb">
   <db_node name="db1" hash_min="0" hash_max="19"></db_node>
   <db_node name="db2" hash_min="20" hash_max="39"></db_node>
@@ -20,17 +20,18 @@ Config file:
   <db_node name="db11" hash_min="200" hash_max="219"></db_node>
   <db_node name="db12" hash_min="220" hash_max="239"></db_node>
 </onevalue>
+```
 
-
-Test script:
+## Test script
+```
 for i in {1..5}
 do
  nohup ./redis-benchmark -h [host] -p [port] -t get,set -r 1000000 -n 1000000 -q > ${i}.log 2>&1 &
 done
-
+```
 Save to test.sh and exectuete.
 
-
+## View result
 cat *.log
 SET: 60971.89 requests per second
 GET: 84288.60 requests per second
@@ -47,6 +48,6 @@ GET: 81017.58 requests per second
 SET: 60459.49 requests per second
 GET: 87943.01 requests per second
 
-Summary:
-SET:30W+/s£¬GET:40W+/s
+## Summary
+SET: 30W+/s, GET:40W+/s
 
