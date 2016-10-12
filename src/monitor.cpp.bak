@@ -23,7 +23,7 @@
 #define STATUS          "STATUS"
 #define OUTPUTSTATUS    "OUTPUTSTATUS"
 #define TOPKEY          "TOPKEY"
-#define TOPVALUE        "TOPVALUE"
+#define TOPVALUE          "TOPVALUE"
 
 
 CCommandRecorder::CCommandRecorder() {

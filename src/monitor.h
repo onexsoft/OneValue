@@ -1,4 +1,23 @@
-﻿#ifndef ONE_PROXY_CACHE_MONITOR
+﻿/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
+
+#ifndef ONE_PROXY_CACHE_MONITOR
 #define ONE_PROXY_CACHE_MONITOR
 
 #include <map>
@@ -10,7 +29,6 @@
 #include "top-key.h"
 #include "onevaluecfg.h"
 
-// 记录所有命令使用的次数
 class CCommandRecorder {
 public:
     CCommandRecorder();
@@ -25,7 +43,6 @@ private:
 };
 
 
-//字节统计类
 class CByteCounter
 {
 public:
@@ -64,13 +81,10 @@ private:
 
 class CIpUtil {
 public:
-    // int类型ip转换成字符串格式ip
     static char* int2ipstr (int ip);
 };
 
-// 记录每个客户端连接信息 包括:
-// 客户端ip 同一个ip的连接次数  请求次数
-// 记录所有命令 记录value的超过1k等大小的次数
+
 class SClientRecorder
 {
 public:
@@ -83,8 +97,8 @@ public:
     inline long connectNum() {return connect_num;}
 public:
     int m_clientIp;
-    long request_num; // 同一个客户端请求次数
-    long connect_num; // 同一个客户端连接次数
+    long request_num;
+    long connect_num;
     CCommandRecorder commandRecorder;
     CByteCounter valueInfo;
     CTimming connectInfo;
@@ -138,8 +152,8 @@ class CFormatMonitorToIoBuf {
 public:
     CFormatMonitorToIoBuf(IOBuffer* pIobuf, int topKeyCnt = 20);
     ~CFormatMonitorToIoBuf(){}
-    void formatProxyToIoBuf(CProxyMonitor& proxyMonirot); // 将proxy信息格式化到m_iobuf
-    void formatClientsToIoBuf(CProxyMonitor& proxyMonirot); // 将client信息格式化到m_iobuf
+    void formatProxyToIoBuf(CProxyMonitor& proxyMonirot);
+    void formatClientsToIoBuf(CProxyMonitor& proxyMonirot);
 
     void formatTopKeyToIoBuf(CProxyMonitor& proxyMonirot);
     void formatTopValueToIoBuf(CProxyMonitor& proxyMonirot);
