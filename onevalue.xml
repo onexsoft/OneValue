@@ -1,0 +1,33 @@
+﻿<onevalue port="8221" thread_num="15" hash_value_max="80" work_dir="mydb" daemonize="0" guard="0" log_file="" unix_socket_file="">
+  <!-- port: onevalue工作端口 -->
+  <!-- thread_num: 线程数 -->
+  <!-- hash_value_max: hash槽个数 -->
+  <!-- work_dir: onevalue存储目录 -->
+  <!-- daemonize: 是否后台运行 1=yes 0=no -->
+  <!-- guard: 是否开启守护进程 1=yes 0=no -->
+  <!-- log_file: 日志文件路径 -->
+  <!-- unix_socket_file: unix_socket 文件路径 -->
+
+  <db_option sync="0" compress="0" lru_cache_size="0" write_buf_size="0"></db_option>
+  <!-- sync: 是否采用同步写入方式 1=yes 0=no -->
+  <!-- compress: 是否启用压缩 1=yes 0=no -->
+  <!-- lru_cache_size: LRU大小(MB) -->
+  <!-- write_buf_size: write buffer 大小(MB) -->
+
+  <db_node name="db1" hash_min="0" hash_max="19"></db_node>
+  <db_node name="db2" hash_min="20" hash_max="39"></db_node>
+  <db_node name="db3" hash_min="40" hash_max="59"></db_node>
+  <db_node name="db4" hash_min="60" hash_max="79"></db_node>
+  <!-- name: 数据库名称 -->
+  <!-- hash_min: 所使用的hash槽(min) -->
+  <!-- hash_max: 所使用的hash槽(max) -->
+
+  <binlog max_binlog_size="64" enabled="0"></binlog>
+  <!-- max_binlog_size: 单个binlog文件最大大小(MB) -->
+  <!-- enabled: 是否启用 1=yes 0=no -->
+
+  <master ip="172.30.12.12" port="8221" sync_interval="5"></master>
+  <!-- ip: 主的IP地址 -->
+  <!-- port: 主的端口 -->
+  <!-- sync_interval: 请求更新间隔(秒) -->
+</onevalue>
