@@ -2,7 +2,6 @@
 A High Performance (About 1 million QPS) Persistent Key-Value Store Based on Redis Protocol
 
 # Performance test
-
 Environment:
 Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
 
@@ -23,9 +22,7 @@ Config file:
 </onevalue>
 
 
-Test script
-
-# bash
+Test script:
 for i in {1..5}
 do
  nohup ./redis-benchmark -h [host] -p [port] -t get,set -r 1000000 -n 1000000 -q > ${i}.log 2>&1 &
@@ -34,7 +31,7 @@ done
 Save to test.sh and exectuete.
 
 
-# cat *.log
+cat *.log
 SET: 60971.89 requests per second
 GET: 84288.60 requests per second
 
