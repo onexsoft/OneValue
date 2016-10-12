@@ -2,9 +2,10 @@
 A High Performance (About 1 million QPS) Persistent Key-Value Store Based on Redis Protocol
 
 # Performance test
-Environment: Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
+Environment
+Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
 
-## Config file
+Config file
 ```
 <onevalue port="8221" thread_num="15" hash_value_max="240" work_dir="mydb">
   <db_node name="db1" hash_min="0" hash_max="19"></db_node>
@@ -22,7 +23,7 @@ Environment: Physical Machine (16  Intel(R) Xeon(R) CPU E5620  @ 2.40GHz 32G)
 </onevalue>
 ```
 
-## Test script
+Test script
 ```
 for i in {1..5}
 do
@@ -31,7 +32,8 @@ done
 ```
 Save to test.sh and exectuete.
 
-## View result
+View result
+```
 cat *.log
 SET: 60971.89 requests per second
 GET: 84288.60 requests per second
@@ -47,7 +49,8 @@ GET: 81017.58 requests per second
 
 SET: 60459.49 requests per second
 GET: 87943.01 requests per second
+```
 
-## Summary
+Summary
 SET: 30W+/s, GET:40W+/s
 
