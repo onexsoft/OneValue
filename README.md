@@ -22,6 +22,7 @@ Config file
   <db_node name="db12" hash_min="220" hash_max="239"></db_node>
 </onevalue>
 ```
+By adjust the thread_num and the db_node count, you can get better performance according to the CPU number and the IO capacity.
 
 Test script(GET, SET)
 ```
