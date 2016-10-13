@@ -1,7 +1,7 @@
 ﻿CC       = gcc
 CXX      = g++
 CFLAGS   = -pipe -Wall -W -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing
-CXXFLAGS = -std=c++0x -pipe -Wall -W -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing
+CXXFLAGS = -std=c++0x -DSNAPPY -pipe -Wall -W -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing
 INCPATH  = -I./src
 LINK     = g++
 LFLAGS   =
@@ -9,7 +9,9 @@ LIBS     = $(SUBLIBS)
 LIBS    += -lrt -pthread
 LIBS 	+= /usr/local/lib/libevent.a
 LIBS    += /usr/local/lib/libevent_pthreads.a
+LIBS    += /usr/local/lib/libjemalloc.a 
 LIBS    += /usr/local/lib/libleveldb.a 
+LIBS    += /usr/local/lib/libsnappy.a
 ####### Output directory
 
 OBJECTS_DIR = tmp/
@@ -46,7 +48,8 @@ HEADERS = src/eventloop.h \
 		src/dbcopy.h \
 		src/ttlmanager.h \
 		src/cmdhandler.h \
-		src/t_list.h 
+		src/t_list.h \
+		src/listcmdhandler.h 
 
 SOURCES = src/eventloop.cpp \
 		src/util/logger.cpp \
@@ -79,7 +82,8 @@ SOURCES = src/eventloop.cpp \
 		src/dbcopy.cpp \
 		src/ttlmanager.cpp \
 		src/cmdhandler.cpp \
-		src/t_list.cpp
+		src/t_list.cpp \
+		src/listcmdhandler.cpp
 
 OBJECTS = tmp/eventloop.o \
 		tmp/logger.o \
@@ -112,7 +116,8 @@ OBJECTS = tmp/eventloop.o \
 		tmp/dbcopy.o \
 		tmp/ttlmanager.o \
 		tmp/cmdhandler.o \
-		tmp/t_list.o
+		tmp/t_list.o \
+		tmp/listcmdhandler.o 
 
 
 DESTDIR  =
@@ -248,3 +253,6 @@ tmp/cmdhandler.o: src/cmdhandler.cpp
 
 tmp/t_list.o: src/t_list.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tmp/t_list.o src/t_list.cpp
+
+tmp/listcmdhandler.o: src/listcmdhandler.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tmp/listcmdhandler.o src/listcmdhandler.cpp
