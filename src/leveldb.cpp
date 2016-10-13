@@ -353,6 +353,9 @@ void LeveldbCluster::stop(void)
             m_hashMapping[i] = NULL;
         }
 
+        /* stop the ttl manager before the database shutdown, else it may coredumped */
+        m_ttlManager->stop();
+        
         for (unsigned int i = 0; i < m_dbs.size(); ++i) {
             Leveldb* db = m_dbs[i];
             delete db;
@@ -360,7 +363,6 @@ void LeveldbCluster::stop(void)
 
         m_curBinlog.close();
         m_started = false;
-        m_ttlManager->stop();
         Logger::log(Logger::Message, "Database stopped");
     }
 }
