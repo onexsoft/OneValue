@@ -249,8 +249,8 @@ LeveldbCluster::LeveldbCluster(void)
 
 LeveldbCluster::~LeveldbCluster(void)
 {
-    delete m_ttlManager;
     stop();
+    delete m_ttlManager;
 }
 
 Leveldb *LeveldbCluster::database(const std::string &name) const
