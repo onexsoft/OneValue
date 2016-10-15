@@ -156,11 +156,15 @@ public:
         bool compress;
         size_t cacheSize;
         size_t writeBufferSize;
+        size_t blockSize;
+        size_t maxFileSize;
 
         Option(void) {
             compress = false;
             cacheSize = 0;
             writeBufferSize = 4*1024*1024;
+            blockSize = 16 * 1024;
+            maxFileSize = 16 * 1024 * 1024;
         }
         ~Option(void) {}
     };
@@ -207,6 +211,8 @@ public:
         bool sync;
         bool binlogEnabled;
         size_t maxBinlogSize;
+        size_t blockSize;
+        size_t maxFileSize;
 
         Option(void) {
             workdir = ".";
@@ -215,6 +221,8 @@ public:
             sync = false;
             binlogEnabled = false;
             maxBinlogSize = 64*1024*1024;
+            blockSize = 16 * 1024;
+            maxFileSize = 16 * 1024 * 1024;
         }
         Option(const Option& opt) { *this = opt; }
         Option& operator =(const Option& opt) {
@@ -227,6 +235,8 @@ public:
                 sync = opt.sync;
                 binlogEnabled = opt.binlogEnabled;
                 maxBinlogSize = opt.maxBinlogSize;
+                blockSize = opt.blockSize;
+                maxFileSize = opt.maxFileSize;
             }
             return *this;
         }
