@@ -90,6 +90,9 @@ bool Leveldb::open(const std::string &name, const Option& opt)
 {
 #ifndef WIN32
     m_options.create_if_missing = true;
+    m_options.block_size = opt.blockSize;
+    m_options.max_file_size = opt.maxFileSize;
+    
     if (opt.compress) {
         m_options.compression = leveldb::kSnappyCompression;
     } else {
