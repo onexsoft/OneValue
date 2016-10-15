@@ -74,11 +74,15 @@ public:
     bool compress() const {return m_compress;}
     int lruCacheSize()const {return m_lruCacheSize * 1024 * 1024;} // return bit
     int writeBufSize()const {return m_writeBufSize * 1024 * 1024;}
+    int blockSize() const {return m_blocksize * 1024; }
+    int maxFileSize() const {return m_maxfilesize * 1024 * 1024; }
 private:
     bool m_sync;
     bool m_compress;
     int m_lruCacheSize;
     int m_writeBufSize;
+    int m_blocksize;
+    int m_maxfilesize;
     friend class COneValueCfg;
 };
 

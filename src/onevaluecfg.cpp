@@ -132,6 +132,8 @@ COption::COption() {
     m_compress = false;
     m_lruCacheSize = 0;
     m_writeBufSize = 4;
+    m_blocksize = 16;
+    m_maxfilesize = 16;
 }
 
 COption::~COption() {}
@@ -149,6 +151,18 @@ void COneValueCfg::getDbOption(const TiXmlAttribute* addrAttr) {
         if (0 == strcasecmp(name, "compress")) {
             if (atoi(value) > 0) {
                 m_option.m_compress = true;
+            }
+            continue;
+        }
+        if (0 == strcasecmp(name, "block_size")) {
+            if (atoi(value) > 0) {
+                m_option.m_blcoksize = atoi(value);
+            }
+            continue;
+        }
+        if (0 == strcasecmp(name, "max_file_size")) {
+            if (atoi(value) > 0) {
+                m_option.m_maxfilesize = atoi(value);
             }
             continue;
         }

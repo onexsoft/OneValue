@@ -84,6 +84,9 @@ void startOneValue(void)
     clusterOption.leveldbopt.compress = opt->compress();
     clusterOption.leveldbopt.cacheSize = opt->lruCacheSize();
     clusterOption.leveldbopt.writeBufferSize = opt->writeBufSize();
+    clusterOption.leveldbopt.blockSize = opt->blockSize();
+    clusterOption.leveldbopt.maxFileSize = opt->maxFileSize();
+    
     for (int i = 0; i < cfg->dbCnt(); ++i) {
         CDbNode* dbcfg = cfg->dbIndex(i);
         clusterOption.dbnames.push_back(dbcfg->db_name);
