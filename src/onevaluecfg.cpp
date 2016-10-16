@@ -156,7 +156,7 @@ void COneValueCfg::getDbOption(const TiXmlAttribute* addrAttr) {
         }
         if (0 == strcasecmp(name, "block_size")) {
             if (atoi(value) > 0) {
-                m_option.m_blcoksize = atoi(value);
+                m_option.m_blocksize = atoi(value);
             }
             continue;
         }
