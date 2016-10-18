@@ -18,16 +18,22 @@
  */
 
 #include "t_hyperloglog.h"
-#include "murmur3.h"
+#include "util/murmur3.h"
 
 #define HLL_HASH_SEED 313
 
-THyperLogLog::THyperLogLog(uint8_t precision)
+THyperLogLog::THyperLogLog(uint8_t precision, std::string origin_register)
 {
     b_ = precision;
     m_ = 1 << precision;
-    register_ = new uint8_t[m_];
     alpha_ = Alpha();
+    register_ = new char[m_];
+    for(uint32_t i = 0; i < m_; ++i)
+        register_[i] = 0;
+    if(origin_register != "")
+        for (uint32_t i = 0; i < m_; ++i) {
+            register_[i] = origin_register[i];
+        }
 }
 
 THyperLogLog::~THyperLogLog()
@@ -35,7 +41,7 @@ THyperLogLog::~THyperLogLog()
     delete [] register_;
 }
 
-void THyperLogLog::Add(const char * str, uint32_t len)
+std::string THyperLogLog::Add(const char * str, uint32_t len)
 {
     uint32_t hash;
     MurmurHash3_x86_32(str, len, HLL_HASH_SEED, (void*) &hash);
@@ -43,6 +49,11 @@ void THyperLogLog::Add(const char * str, uint32_t len)
     uint8_t rank = Nclz((hash << b_), 32 - b_);
     if (rank > register_[index])
         register_[index] = rank;
+    std::string result_str(m_, 0);
+    for (uint32_t i = 0; i < m_; ++i) {
+        result_str[i] = register_[i];
+    }
+    return result_str;
 }
 
 double THyperLogLog::Estimate() const
@@ -66,7 +77,7 @@ double THyperLogLog::Estimate() const
 double THyperLogLog::FirstEstimate() const
 {
     double estimate, sum = 0.0;
-    for (uint32_t i=0;i < m_; i++)
+    for (uint32_t i = 0; i < m_; i++)
         sum += 1.0 / (1 << register_[i]);
     
     estimate = alpha_ * m_ * m_ / sum;
@@ -90,7 +101,7 @@ double THyperLogLog::Alpha() const
 int THyperLogLog::CountZero() const
 {
     int count = 0;
-    for(uint32_t i=0;i < m_; i++)
+    for(uint32_t i = 0;i < m_; i++)
     {
         if (register_[i] == 0) {
             count++;
@@ -116,4 +127,3 @@ uint8_t THyperLogLog::Nclz(uint32_t x, int b)
 {
     return (uint8_t)std::min(b, ::__builtin_clz(x)) + 1;
 }
-

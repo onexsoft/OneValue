@@ -111,6 +111,10 @@ static RedisCommand _redisCommand[] = {
     {"RPUSHX", 6, RedisCommand::RPUSHX, onRpushxCommand, NULL},
     {"RPOPLPUSH", 9, RedisCommand::RPOPLPUSH, onRPopLPushCommand, NULL},
     {"LCLEAR", 6, RedisCommand::LCLEAR, onLClearCommand, NULL},
+	
+    {"PFADD", 5, RedisCommand::PFADD, onPFAddCommand, NULL},
+    {"PFCOUNT", 7, RedisCommand::PFCOUNT, onPFCountCommand, NULL},
+    {"PFMERGE", 7, RedisCommand::PFMERGE, onPFMergeCommand, NULL},
 
     {"PING", 4, RedisCommand::PING, onPingCommand, NULL},
     {"SHOWCMD", 7, -1, onShowCommand, NULL},

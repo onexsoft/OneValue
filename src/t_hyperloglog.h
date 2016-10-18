@@ -31,7 +31,7 @@
 class THyperLogLog
 {
 public:
-    THyperLogLog(uint8_t precision);
+    THyperLogLog(uint8_t precision, std::string origin_register);
     ~THyperLogLog();
     
     double Estimate() const;
@@ -40,14 +40,15 @@ public:
     double Alpha() const;
     uint8_t Nclz(uint32_t x, int b);
     
-    void Add(const char * str, uint32_t len);
+    std::string Add(const char * str, uint32_t len);
     void Merge(const THyperLogLog & hll);
     
 protected:
     uint32_t m_;                    // register bit width
     uint8_t b_;                     // register size
     double alpha_;
-    uint8_t * register_;            // registers
+    char * register_;               // registers
 };
 
 #endif
+
