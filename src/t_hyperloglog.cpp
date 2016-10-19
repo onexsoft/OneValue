@@ -110,7 +110,7 @@ int THyperLogLog::CountZero() const
     return count;
 }
 
-void THyperLogLog::Merge(const THyperLogLog & hll)
+std::string THyperLogLog::Merge(const THyperLogLog & hll)
 {
     if (m_ != hll.m_) {
         // TODO: ERROR "number of registers doesn't match"
@@ -120,6 +120,12 @@ void THyperLogLog::Merge(const THyperLogLog & hll)
             register_[r] |= hll.register_[r];
         }
     }
+    
+    std::string result_str(m_, 0);
+    for (uint32_t i = 0; i < m_; ++i) {
+        result_str[i] = register_[i];
+    }
+    return result_str;
 }
 
 //::__builtin_clz(x): 返回左起第一个‘1’之前0的个数
