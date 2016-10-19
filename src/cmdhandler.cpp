@@ -785,6 +785,8 @@ void onPFAddCommand(ClientPacket* packet, void*)
     std::string val, str_register, store;
     XObject key = makeStringKey(r.tokens[1].s, r.tokens[1].len, store);
     LeveldbCluster* db = packet->proxy()->leveldbCluster();
+    
+    string_mutex.lock(key);
     if(db->value(key, val)){
 	str_register = val;
     }else{
@@ -804,6 +806,7 @@ void onPFAddCommand(ClientPacket* packet, void*)
     } else {
         packet->sendBuff.append("-ERR Unknown error\r\n");
     }
+    string_mutex.unlock(key);
 
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
@@ -835,7 +838,7 @@ void onPFCountCommand(ClientPacket* packet, void*)
 void onPFMergeCommand(ClientPacket * packet, void*)
 {
     RedisProtoParseResult& r = packet->recvParseResult;
-    if(r.tokenCount != 3){
+    if(r.tokenCount < 3){
 	packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
 	return;
     }
@@ -844,31 +847,39 @@ void onPFMergeCommand(ClientPacket * packet, void*)
     
     std::string store1, str_register1, val1;
     XObject key1 = makeStringKey(r.tokens[1].s, r.tokens[1].len, store1);
+  
+    string_mutex.lock(key1);
     if(db->value(key1, val1)){
 	str_register1 = val1;
     }else{
+	// TODO: ERROR key does not exists
 	str_register1 = "";
     }
-    
-    std::string store2, str_register2, val2;
-    XObject key2 = makeStringKey(r.tokens[2].s, r.tokens[2].len, store2);
-    if(db->value(key2, val2)){
-	str_register2 = val2;
-    }else{
-	str_register2 = "";
-    }
     THyperLogLog log1(10, str_register1);
-    THyperLogLog log2(10, str_register2);
+   
+    std::string result; 
+    for(int i = 2; i < r.tokenCount; ++i){
+	std::string store2, str_register2, val2;
+    	XObject key2 = makeStringKey(r.tokens[i].s, r.tokens[i].len, store2);
+    	if(db->value(key2, val2)){
+		str_register2 = val2;
+    	}else{
+		// TODO: ERROR key does not exists
+		str_register2 = "";
+    	}
 
-    std::string result = log1.Merge(log2);
+    	THyperLogLog log2(10, str_register2);
+	result = log1.Merge(log2);
+    }
+   
     XObject value(result.data(), result.size());
-
     if (db->setValue(key1, value)) {
-        packet->sendBuff.append("+OK\r\n");
+    	packet->sendBuff.append("+OK\r\n");
     } else {
         packet->sendBuff.append("-ERR Unknown error\r\n");
     }
-
+    string_mutex.unlock(key1);
+    
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
 
