@@ -160,3 +160,6 @@ tmp/t_list.o: src/t_list.cpp
 
 tmp/listcmdhandler.o: src/listcmdhandler.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tmp/listcmdhandler.o src/listcmdhandler.cpp
+
+tmp/t_hyperloglog.o: src/t_hyperloglog.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tmp/t_hyperloglog.o src/t_hyperloglog.cpp
