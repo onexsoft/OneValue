@@ -107,6 +107,7 @@ int NonPortable::setVipAddress(const char *ifname, const char *address, int isde
 
     int    addr_mask = 0;
     struct sockaddr_in brdaddr;
+    memset(&brdaddr, 0, sizeof(brdaddr));
     struct sockaddr_in netmask;
 
     int    ifindex = 0;

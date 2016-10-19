@@ -21,6 +21,7 @@
 #include "command.h"
 #include "leveldb.h"
 #include "t_redis.h"
+#include "t_hyperloglog.h"
 #include "dbcopy.h"
 #include "ttlmanager.h"
 #include "sync.h"
@@ -773,6 +774,67 @@ void onExpireCommand(ClientPacket* packet, void*)
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
 
+void onPFAddCommand(ClientPacket* packet, void*)
+{
+    RedisProtoParseResult& r = packet->recvParseResult;
+    if(r.tokenCount < 3){
+	packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
+	return;
+    }
+    
+    std::string val, str_register, store;
+    XObject key = makeStringKey(r.tokens[1].s, r.tokens[1].len, store);
+    LeveldbCluster* db = packet->proxy()->leveldbCluster();
+    if(db->value(key, val)){
+	str_register = val;
+    }else{
+	str_register = "";
+    }    
+    
+    THyperLogLog log(10, str_register);
+    
+    std::string result;
+    for(int i = 2; i < r.tokenCount; ++i){
+	result = log.Add(r.tokens[i].s, r.tokens[i].len);
+    }
+    XObject value(result.data(), result.size());
+
+    if (db->setValue(key, value)) {
+        packet->sendBuff.append("+OK\r\n");
+    } else {
+        packet->sendBuff.append("-ERR Unknown error\r\n");
+    }
+
+    packet->setFinishedState(ClientPacket::RequestFinished);
+}
+
+void onPFCountCommand(ClientPacket* packet, void*)
+{
+   RedisProtoParseResult& r = packet->recvParseResult;
+   if(r.tokenCount != 2){
+        packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
+        return;
+    }
+
+    std::string val, str_register, store;
+    XObject key = makeStringKey(r.tokens[1].s, r.tokens[1].len, store);
+    LeveldbCluster* db = packet->proxy()->leveldbCluster();
+    if(db->value(key, val)){
+        str_register = val;
+	THyperLogLog log(10, str_register);
+	std::string estimate = to_string(log.Estimate());
+        packet->sendBuff.appendFormatString("$%d\r\n", estimate.size());
+	packet->sendBuff.append(estimate.data(), estimate.size());
+	packet->sendBuff.append("\r\n");
+    }else{
+	packet->sendBuff.append("$-1\r\n");
+    }
+    packet->setFinishedState(ClientPacket::RequestFinished);
+}
+
+void onPFMergeCommand(ClientPacket * packet, void*)
+{
+}
 
 void onPingCommand(ClientPacket* packet, void*)
 {

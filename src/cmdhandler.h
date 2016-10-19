@@ -46,6 +46,10 @@ void onSetCommand(ClientPacket*, void*);
 void onDelCommand(ClientPacket*, void*);
 void onExpireCommand(ClientPacket*, void*);
 
+void onPFAddCommand(ClientPacket*, void*);
+void onPFCountCommand(ClientPacket*, void*);
+void onPFMergeCommand(ClientPacket*, void*);
+
 void onFlushdbCommand(ClientPacket*, void*);
 void onPingCommand(ClientPacket*, void*);
 
