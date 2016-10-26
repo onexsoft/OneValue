@@ -26,7 +26,7 @@
   <!-- max_binlog_size: 单个binlog文件最大大小(MB) -->
   <!-- enabled: 是否启用 1=yes 0=no -->
 
-  <master ip="172.30.12.12" port="8221" sync_interval="5"></master>
+  <master ip="127.0.0.1" port="8221" sync_interval="5"></master>
   <!-- ip: 主的IP地址 -->
   <!-- port: 主的端口 -->
   <!-- sync_interval: 请求更新间隔(秒) -->
