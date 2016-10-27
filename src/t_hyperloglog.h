@@ -41,7 +41,7 @@ public:
     uint8_t Nclz(uint32_t x, int b);
     
     std::string Add(const char * str, uint32_t len);
-    void Merge(const THyperLogLog & hll);
+    std::string Merge(const THyperLogLog & hll);
     
 protected:
     uint32_t m_;                    // register bit width
