@@ -34,7 +34,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
+
+#ifdef __LINUX__
 #include <netpacket/packet.h>
+#endif
 
 #include <sys/wait.h>
 #include <sys/param.h>
@@ -42,6 +45,9 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+#endif
+
+#ifdef __LINUX__
 struct ARP_PACKET
 {
     unsigned char dest_mac[6];

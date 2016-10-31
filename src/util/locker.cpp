@@ -62,21 +62,21 @@ void Mutex::unlock(void)
 
 SpinLocker::SpinLocker(void)
 {
-#ifndef WIN32
+#ifdef __LINUX__
     pthread_spin_init(&m_spinlock, PTHREAD_PROCESS_SHARED);
 #endif
 }
 
 SpinLocker::~SpinLocker(void)
 {
-#ifndef WIN32
+#ifdef __LINUX__
     pthread_spin_destroy(&m_spinlock);
 #endif
 }
 
 void SpinLocker::lock(void)
 {
-#ifdef WIN32
+#ifndef __LINUX__
     m_mutex.lock();
 #else
     pthread_spin_lock(&m_spinlock);
@@ -85,7 +85,7 @@ void SpinLocker::lock(void)
 
 void SpinLocker::unlock(void)
 {
-#ifdef WIN32
+#ifndef __LINUX__
     m_mutex.unlock();
 #else
     pthread_spin_unlock(&m_spinlock);

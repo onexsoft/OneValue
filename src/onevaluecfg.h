@@ -58,7 +58,7 @@ class CDbNode {
 public:
     CDbNode() { hash_min = 0; hash_max = 0;}
     ~CDbNode(){}
-    char db_name[256];
+    char db_name[256] = {0};
     int hash_min;
     int hash_max;
 };

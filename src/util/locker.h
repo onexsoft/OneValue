@@ -52,7 +52,7 @@ public:
     void unlock(void);
 
 private:
-#ifndef WIN32
+#ifdef __LINUX__
     pthread_spinlock_t m_spinlock;
 #else
     Mutex m_mutex;
