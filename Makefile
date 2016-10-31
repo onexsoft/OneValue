@@ -1,5 +1,5 @@
 ﻿CC       = gcc
-OS := $(shell uname)
+OS      := $(shell uname)
 CXX      = g++
 CFLAGS   = -pipe -Wall -W -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing
 CXXFLAGS = -std=c++0x -DSNAPPY -pipe -Wall -W -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -mtune=generic -fno-strict-aliasing
