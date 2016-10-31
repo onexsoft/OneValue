@@ -83,7 +83,7 @@ void TTLThread::run()
                     dbClu->remove(XObject(pExpireKey->keyBuf(), pExpireKey->keyLen));
                 }
                 it.next();
-                if (++loop = 100000) {
+                if (++loop == 100000) {
                     loop = 0;
                     now = (unsigned int)time(NULL);
                 }

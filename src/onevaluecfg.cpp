@@ -276,8 +276,8 @@ bool COneValueCfgChecker::isValid(COneValueCfg* pCfg, const char*& errMsg)
     map<string, int> nameMap;
     for (int i = 0; i < pCfg->dbCnt(); ++i) {
         const CDbNode* dbNode = pCfg->dbIndex(i);
-        if (dbNode->db_name == NULL) {
-            errMsg = "dbNode name NULL";
+        if (strlen(dbNode->db_name) == 0) {
+            errMsg = "dbNode name is empty";
             return false;
         }
         if (nameMap.find(string(dbNode->db_name)) == nameMap.end()) {
