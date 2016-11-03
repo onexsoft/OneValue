@@ -109,12 +109,12 @@ bool TList::lpop(std::string* value)
     m_db->value(key, listVal);
     if (listVal.empty()) {
         setLastError("no such key");
-        return "";
+        return false;
     }
 
     const ListValueBuffer* listBuff = (ListValueBuffer*) listVal.data();
     if (listBuff->size <= 0) {
-        return "";
+        return false;
     }
 
     std::string keyTmp;
@@ -327,12 +327,12 @@ bool TList::rpop(std::string* value)
     m_db->value(key, listVal);
     if (listVal.empty()) {
         setLastError("no such key");
-        return "";
+        return false;
     }
 
     const ListValueBuffer* listBuff = (ListValueBuffer*) listVal.data();
     if (listBuff->size <= 0) {
-        return "";
+        return false;
     }
 
     std::string keyTmp;
