@@ -69,6 +69,9 @@ struct ListValueBuffer
     int size;
     int counter;
 
+    int left_pos;
+    int right_pos;
+    
     int* intBuffer(void) const { return (int*)(this+1); }
     int at(int index) const { return intBuffer()[index]; }
     int bufferSize(void) const { return sizeof(*this) + size * sizeof(int); }
@@ -81,13 +84,11 @@ public:
     ~TList(void);
 
     bool lindex(int index, std::string* value);
-    bool linsert(int pos, const std::string& value);
     int llen(void);
     bool lpop(std::string* value);
     int lpush(const std::string& value);
     int lpushx(const std::string& value);
     bool lrange(int start, int stop, stringlist* result);
-    int lrem(int count, const std::string& value);
     bool lset(int index, const std::string& value);
     bool ltrim(int start, int stop);
     bool rpop(std::string* value);
