@@ -69,16 +69,19 @@ bool TList::lindex(int index, std::string* value)
         return false;
     }
     ListValueBuffer* listBuff = (ListValueBuffer*) valueTmp.data();
+
     int size = listBuff->size;
-    if (index < 0) {
+    if(index < 0)
         index += size;
-    }
-    if (index < 0 || index > size -  1) {
+    index += listBuff->left_pos + 1;
+
+    if (index < (listBuff->left_pos + 1) || index > (listBuff->right_pos - 1)) {
         setLastError("index out of range");
         return false;
     }
+
     std::string eleKey;
-    ListElementKey::makeListElementKey(m_listname, index + listBuff->left_pos + 1, eleKey);
+    ListElementKey::makeListElementKey(m_listname, index, eleKey);
     m_db->value(XObject(eleKey.data(), eleKey.size()), *value);
     return value;
 }
@@ -228,9 +231,19 @@ bool TList::lrange(int start, int stop, stringlist *result)
         return false;
     }
 
-    for(int i = start; i <= stop; ++i) {
+    for(int i= start; i <= stop; ++i) {
+        int index = i;
+        
+        if (index < 0)
+            index += listValueBuff->size;
+        index += listValueBuff->left_pos + 1;
+                
+        if (index < (listValueBuff->left_pos + 1) || index > (listValueBuff->right_pos - 1)) {
+            setLastError("index out of range");
+            return false;
+        }
         std::string keyTmp;
-        ListElementKey::makeListElementKey(m_listname, i + listValueBuff->left_pos, keyTmp);
+        ListElementKey::makeListElementKey(m_listname, index, keyTmp);
         std::string val_;
         XObject xobKey(keyTmp.data(), keyTmp.size());
         m_db->value(xobKey, val_);
@@ -251,15 +264,18 @@ bool TList::lset(int index, const std::string &value)
         return false;
     }
     ListValueBuffer* valueBuff = (ListValueBuffer*)val.data();
-    if (index < 0) {
-        index = valueBuff->size + index;
-    }
-    if (index < 0 || index > valueBuff->size - 1) {
+
+    if (index < 0)
+        index += valueBuff->size;
+    index += valueBuff->left_pos + 1;
+
+    if (index < (valueBuff->left_pos + 1) || index > (valueBuff->right_pos - 1)) {
         setLastError("index out of range");
         return false;
     }
+    
     std::string selement;
-    ListElementKey::makeListElementKey(m_listname, valueBuff->at(index), selement);
+    ListElementKey::makeListElementKey(m_listname, index, selement);
     m_db->setValue(XObject(selement.data(), selement.size()), XObject(value.data(), value.size()));
     return true;
 }
@@ -282,23 +298,38 @@ bool TList::ltrim(int start, int stop)
         return false;
     }
 
+    if (start < 0)
+        start += valueBuff->size;
+    start += valueBuff->left_pos + 1;
+
+    if (start < (valueBuff->left_pos + 1) || start > (valueBuff->right_pos - 1)) {
+        setLastError("index out of range");
+        return false;
+    }
+
+    if (stop < 0)
+        stop += valueBuff->size;
+    stop += valueBuff->left_pos + 1;
+
+    if (stop < (valueBuff->left_pos + 1) || stop > (valueBuff->right_pos - 1)) {
+        setLastError("index out of range");
+        return false;
+    }
     if (start > stop) {
         start = valueBuff->size;
     }
 
     IOBuffer newBuff;
     newBuff.append((char*)valueBuff, sizeof(ListValueBuffer));
-    int* intBuff = valueBuff->intBuffer();
 
     int removeCount = 0;
-    for (int i = 0; i < valueBuff->size; ++i) {
+    for (int i = valueBuff->left_pos+1; i < valueBuff->right_pos; ++i) {
         if (i < start || i > stop) {
             std::string selement;
-            ListElementKey::makeListElementKey(m_listname, intBuff[i], selement);
+            ListElementKey::makeListElementKey(m_listname, i, selement);
             XObject elementKey(selement.data(), selement.size());
             m_db->remove(elementKey);
             ++removeCount;
-            intBuff[i] = -1;
         }
     }
 
