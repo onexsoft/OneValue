@@ -400,7 +400,7 @@ int TList::rpush(const std::string &value)
         init.counter = 0;
         init.size = 0;
         init.left_pos = 0;
-        init.right_pos = -1;
+        init.right_pos = 1;
         oldValue.assign((char*)&init, sizeof(ListValueBuffer));
     }
 
