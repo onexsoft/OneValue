@@ -101,76 +101,6 @@ void onLlenCommand(ClientPacket* packet, void*)
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
 
-
-void onLinsertCommand(ClientPacket* packet, void*)
-{
-    RedisProtoParseResult& r = packet->recvParseResult;
-    if (r.tokenCount != 5) {
-        packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
-        return;
-    }
-
-    std::string name(r.tokens[1].s, r.tokens[1].len);
-    TList list(packet->proxy()->leveldbCluster(), name);
-    const std::string how(r.tokens[2].s, r.tokens[2].len);
-    const std::string existValue(r.tokens[3].s, r.tokens[3].len);
-    const std::string value(r.tokens[4].s, r.tokens[4].len);
-    stringlist result;
-
-    list_mutex.lock(name);
-    bool ok = list.lrange(0, -1, &result);
-    list_mutex.unlock(name);
-
-    if (!ok) {
-        packet->sendBuff.append(":0\r\n");
-        packet->setFinishedState(ClientPacket::RequestFinished);
-        return;
-    }
-    stringlist::const_iterator itList = result.begin();
-    int where = 0;
-    bool find = false;
-    for (; itList != result.end(); ++itList) {
-        if (existValue == *itList) {
-            find = true;
-            break;
-        }
-        ++where;
-    }
-    if (!find) {
-        // doesn't exist this value
-        packet->sendBuff.append(":-1\r\n");
-        packet->setFinishedState(ClientPacket::RequestFinished);
-        return;
-    }
-    if (0 == strcasecmp("after", how.c_str())) {
-        list_mutex.lock(name);
-        ok = list.linsert(where + 1, value);
-        list_mutex.unlock(name);
-        if (!ok) {
-            packet->sendBuff.append(":-1\r\n");
-            packet->setFinishedState(ClientPacket::RequestFinished);
-            return;
-        }
-        packet->sendBuff.appendFormatString(":%d\r\n", result.size() + 1);
-        packet->setFinishedState(ClientPacket::RequestFinished);
-        return;
-    }
-    if (0 == strcasecmp("before", how.c_str())) {
-        list_mutex.lock(name);
-        ok = list.linsert(where, value);
-        list_mutex.unlock(name);
-        if (!ok) {
-            packet->sendBuff.append(":-1\r\n");
-            packet->setFinishedState(ClientPacket::RequestFinished);
-            return;
-        }
-        packet->sendBuff.appendFormatString(":%d\r\n", result.size() + 1);
-        packet->setFinishedState(ClientPacket::RequestFinished);
-        return;
-    }
-}
-
-
 void onLpopCommand(ClientPacket* packet, void*)
 {
     RedisProtoParseResult& r = packet->recvParseResult;
@@ -273,33 +203,6 @@ void onLRangeCommand(ClientPacket *packet, void*)
         packet->sendBuff.append("\r\n", 2);
     }
 
-    packet->setFinishedState(ClientPacket::RequestFinished);
-}
-
-void onLRemCommand(ClientPacket *packet, void *)
-{
-    RedisProtoParseResult& r = packet->recvParseResult;
-    if (r.tokenCount != 4) {
-        packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
-        return;
-    }
-
-    std::string str_count(r.tokens[2].s, r.tokens[2].len);
-    if (!TRedisHelper::isInteger(str_count)) {
-        packet->sendBuff.append("-ERR value is not an integer or out of range\r\n");
-        packet->setFinishedState(ClientPacket::RequestFinished);
-        return;
-    }
-
-    std::string name(r.tokens[1].s, r.tokens[1].len);
-    int removeCount = atoi(str_count.c_str());
-    TList list(packet->proxy()->leveldbCluster(), name);
-
-    list_mutex.lock(name);
-    int ret = list.lrem(removeCount, std::string(r.tokens[3].s, r.tokens[3].len));
-    list_mutex.unlock(name);
-
-    packet->sendBuff.appendFormatString(":%d\r\n", ret);
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
 

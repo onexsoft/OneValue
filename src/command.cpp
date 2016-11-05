@@ -97,13 +97,11 @@ static RedisCommand _redisCommand[] = {
     {"HCLEAR", 6, RedisCommand::HCLEAR, onHClearCommand, NULL},
 
     {"LINDEX", 6, RedisCommand::LINDEX, onLindexCommand, NULL},
-    {"LINSERT", 7, RedisCommand::LINSERT, onLinsertCommand, NULL},
     {"LLEN", 4, RedisCommand::LLEN, onLlenCommand, NULL},
     {"LPOP", 4, RedisCommand::LPOP, onLpopCommand, NULL},
     {"LPUSH", 5, RedisCommand::LPUSH, onLpushCommand, NULL},
     {"LPUSHX", 6, RedisCommand::LPUSHX, onLpushxCommand, NULL},
     {"LRANGE", 6, RedisCommand::LRANGE, onLRangeCommand, NULL},
-    {"LREM", 4, RedisCommand::LREM, onLRemCommand, NULL},
     {"LSET", 4, RedisCommand::LSET, onLSetCommand, NULL},
     {"LTRIM", 5, RedisCommand::LTRIM, onLTrimCommand, NULL},
     {"RPOP", 4, RedisCommand::RPOP, onRPopCommand, NULL},
@@ -111,7 +109,7 @@ static RedisCommand _redisCommand[] = {
     {"RPUSHX", 6, RedisCommand::RPUSHX, onRpushxCommand, NULL},
     {"RPOPLPUSH", 9, RedisCommand::RPOPLPUSH, onRPopLPushCommand, NULL},
     {"LCLEAR", 6, RedisCommand::LCLEAR, onLClearCommand, NULL},
-	
+
     {"PFADD", 5, RedisCommand::PFADD, onPFAddCommand, NULL},
     {"PFCOUNT", 7, RedisCommand::PFCOUNT, onPFCountCommand, NULL},
     {"PFMERGE", 7, RedisCommand::PFMERGE, onPFMergeCommand, NULL},
