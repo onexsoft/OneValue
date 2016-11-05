@@ -80,9 +80,9 @@ bool TList::lindex(int index, std::string* value)
         return false;
     }
 
-    std::string eleKey;
-    ListElementKey::makeListElementKey(m_listname, index, eleKey);
-    m_db->value(XObject(eleKey.data(), eleKey.size()), *value);
+    std::string keyTmp;
+    ListElementKey::makeListElementKey(m_listname, index, keyTmp);
+    m_db->value(XObject(keyTmp.data(), keyTmp.size()), *value);
     return value;
 }
 
@@ -91,13 +91,13 @@ int TList::llen(void)
     std::string buf;
     ListKey::makeListKey(m_listname, buf);
     XObject key(buf.data(), buf.size());
-    std::string value;
-    m_db->value(key, value);
-    if (value.empty()) {
+    std::string valueTmp;
+    m_db->value(key, valueTmp);
+    if (valueTmp.empty()) {
         setLastError("no such key");
         return 0;
     }
-    ListValueBuffer* listBuff = (ListValueBuffer*)value.data();
+    ListValueBuffer* listBuff = (ListValueBuffer*) valueTmp.data();
     return (listBuff->size < 0 ? 0 : listBuff->size);
 }
 
@@ -108,14 +108,14 @@ bool TList::lpop(std::string* value)
     ListKey::makeListKey(m_listname, buf);
     XObject key(buf.data(), buf.size());
 
-    std::string listVal;
-    m_db->value(key, listVal);
-    if (listVal.empty()) {
+    std::string valueTmp;
+    m_db->value(key, valueTmp);
+    if (valueTmp.empty()) {
         setLastError("no such key");
         return false;
     }
 
-    const ListValueBuffer* listBuff = (ListValueBuffer*) listVal.data();
+    const ListValueBuffer* listBuff = (ListValueBuffer*) valueTmp.data();
     if (listBuff->size <= 0) {
         return false;
     }
@@ -216,17 +216,17 @@ int TList::lpushx(const std::string &value)
 
 bool TList::lrange(int start, int stop, stringlist *result)
 {
-    std::string _listKey;
-    ListKey::makeListKey(m_listname, _listKey);
-    XObject listkey(_listKey.data(), _listKey.size());
+    std::string buf;
+    ListKey::makeListKey(m_listname, buf);
+    XObject key(buf.data(), buf.size());
 
-    std::string val;
-    if (!m_db->value(listkey, val)) {
+    std::string valueTmp;
+    if (!m_db->value(key, valueTmp)) {
         return false;
     }
 
-    const ListValueBuffer* listValueBuff = (ListValueBuffer*) val.data();
-    const int size = listValueBuff->size;
+    ListValueBuffer* listBuff = (ListValueBuffer*) valueTmp.data();
+    int size = listBuff->size;
     if (!tlist_transformIndex(start, stop, size)) {
         return false;
     }
@@ -235,10 +235,10 @@ bool TList::lrange(int start, int stop, stringlist *result)
         int index = i;
         
         if (index < 0)
-            index += listValueBuff->size;
-        index += listValueBuff->left_pos + 1;
+            index += listBuff->size;
+        index += listBuff->left_pos + 1;
                 
-        if (index < (listValueBuff->left_pos + 1) || index > (listValueBuff->right_pos - 1)) {
+        if (index < (listBuff->left_pos + 1) || index > (listBuff->right_pos - 1)) {
             setLastError("index out of range");
             return false;
         }
@@ -254,16 +254,16 @@ bool TList::lrange(int start, int stop, stringlist *result)
 
 bool TList::lset(int index, const std::string &value)
 {
-    std::string slistkey;
-    ListKey::makeListKey(m_listname, slistkey);
-    XObject listkey(slistkey.data(), slistkey.size());
+    std::string buf;
+    ListKey::makeListKey(m_listname, buf);
+    XObject key(buf.data(), buf.size());
 
-    std::string val;
-    if (!m_db->value(listkey, val)) {
+    std::string valueTmp;
+    if (!m_db->value(key, valueTmp)) {
         setLastError("no such key");
         return false;
     }
-    ListValueBuffer* valueBuff = (ListValueBuffer*)val.data();
+    ListValueBuffer* valueBuff = (ListValueBuffer*) valueTmp.data();
 
     if (index < 0)
         index += valueBuff->size;
@@ -282,17 +282,17 @@ bool TList::lset(int index, const std::string &value)
 
 bool TList::ltrim(int start, int stop)
 {
-    std::string slistkey;
-    ListKey::makeListKey(m_listname, slistkey);
-    XObject listkey(slistkey.data(), slistkey.size());
+    std::string buf;
+    ListKey::makeListKey(m_listname, buf);
+    XObject key(buf.data(), buf.size());
 
-    std::string val;
-    if (!m_db->value(listkey, val)) {
+    std::string valueTmp;
+    if (!m_db->value(key, valueTmp)) {
         setLastError("no such key");
         return false;
     }
 
-    ListValueBuffer* valueBuff = (ListValueBuffer*)val.data();
+    ListValueBuffer* valueBuff = (ListValueBuffer*) valueTmp.data();
     if (!tlist_transformIndex(start, stop, valueBuff->size)) {
         setLastError("index out of range");
         return false;
@@ -319,9 +319,6 @@ bool TList::ltrim(int start, int stop)
         start = valueBuff->size;
     }
 
-    IOBuffer newBuff;
-    newBuff.append((char*)valueBuff, sizeof(ListValueBuffer));
-
     int removeCount = 0;
     for (int i = valueBuff->left_pos+1; i < valueBuff->right_pos; ++i) {
         if (i < start || i > stop) {
@@ -333,18 +330,16 @@ bool TList::ltrim(int start, int stop)
         }
     }
 
-    for (int i = 0; i < valueBuff->size; ++i) {
-        int id = valueBuff->at(i);
-        if (id != -1) {
-            newBuff.append((char*)&id, sizeof(int));
-        }
-    }
+    // update the valueList
+    ListValueBuffer update;
+    update.counter = valueBuff->counter - removeCount;
+    update.size = valueBuff->size - removeCount;
+    update.left_pos = start;
+    update.right_pos = stop;
 
-    valueBuff = (ListValueBuffer*)newBuff.data();
-    valueBuff->counter += removeCount;
-    valueBuff->size -= removeCount;
-
-    m_db->setValue(listkey, XObject(newBuff.data(), newBuff.size()));
+    std::string newValue;
+    newValue.assign((char *)&update, sizeof(ListValueBuffer));
+    m_db->setValue(key, XObject(newValue.data(), newValue.size()));
     return true;
 }
 
@@ -354,20 +349,20 @@ bool TList::rpop(std::string* value)
     ListKey::makeListKey(m_listname, buf);
     XObject key(buf.data(), buf.size());
 
-    std::string listVal;
-    m_db->value(key, listVal);
-    if (listVal.empty()) {
+    std::string valueTmp;
+    m_db->value(key, valueTmp);
+    if (valueTmp.empty()) {
         setLastError("no such key");
         return false;
     }
 
-    const ListValueBuffer* listBuff = (ListValueBuffer*) listVal.data();
-    if (listBuff->size <= 0) {
+    ListValueBuffer* valueBuff = (ListValueBuffer*) valueTmp.data();
+    if (valueBuff->size <= 0) {
         return false;
     }
 
     std::string keyTmp;
-    ListElementKey::makeListElementKey(m_listname, listBuff->right_pos - 1, keyTmp);
+    ListElementKey::makeListElementKey(m_listname, valueBuff->right_pos - 1, keyTmp);
 
     // get the value
     m_db->value(XObject(keyTmp.data(), keyTmp.size()), *value);
@@ -376,10 +371,10 @@ bool TList::rpop(std::string* value)
 
     // update the valueList
     ListValueBuffer update;
-    update.counter = listBuff->counter - 1;
-    update.size = listBuff->size - 1;
-    update.left_pos = listBuff->left_pos;
-    update.right_pos = listBuff->right_pos - 1;
+    update.counter = valueBuff->counter - 1;
+    update.size = valueBuff->size - 1;
+    update.left_pos = valueBuff->left_pos;
+    update.right_pos = valueBuff->right_pos - 1;
 
     std::string newValue;
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
@@ -390,12 +385,12 @@ bool TList::rpop(std::string* value)
 
 int TList::rpush(const std::string &value)
 {
-    std::string slistkey;
-    ListKey::makeListKey(m_listname, slistkey);
-    XObject listkey(slistkey.data(), slistkey.size());
+    std::string buf;
+    ListKey::makeListKey(m_listname, buf);
+    XObject key(buf.data(), buf.size());
 
     std::string oldValue;
-    if (!m_db->value(listkey, oldValue)) {
+    if (!m_db->value(key, oldValue)) {
         ListValueBuffer init;
         init.counter = 0;
         init.size = 0;
@@ -409,9 +404,9 @@ int TList::rpush(const std::string &value)
     int newId = valueBuff->right_pos;
     ListElementKey::makeListElementKey(m_listname, newId, selement);
 
-    XObject key(selement.data(), selement.size());
-    XObject val(value.data(), value.size());
-    m_db->setValue(key, val);
+    XObject data_key(selement.data(), selement.size());
+    XObject data_val(value.data(), value.size());
+    m_db->setValue(data_key, data_val);
 
     ListValueBuffer update;
     update.counter = valueBuff->counter + 1;
@@ -421,7 +416,7 @@ int TList::rpush(const std::string &value)
 
     std::string newValue;
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
-    m_db->setValue(listkey, XObject(newValue.data(), newValue.size()));
+    m_db->setValue(key, XObject(newValue.data(), newValue.size()));
     return update.size;
 }
 
