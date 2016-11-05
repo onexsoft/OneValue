@@ -225,6 +225,7 @@ bool TList::lrange(int start, int stop, stringlist *result)
     ListValueBuffer* listBuff = (ListValueBuffer*) valueTmp.data();
     int size = listBuff->size;
     if (!tlist_transformIndex(start, stop, size)) {
+        setLastError("index out of range");
         return false;
     }
 
@@ -293,35 +294,35 @@ bool TList::ltrim(int start, int stop)
         return false;
     }
 
-    ListValueBuffer* valueBuff = (ListValueBuffer*) valueTmp.data();
-    if (!tlist_transformIndex(start, stop, valueBuff->size)) {
+    ListValueBuffer* listBuff = (ListValueBuffer*) valueTmp.data();
+    if (!tlist_transformIndex(start, stop, listBuff->size)) {
         setLastError("index out of range");
         return false;
     }
 
     if (start < 0)
-        start += valueBuff->size;
-    start += valueBuff->left_pos + 1;
+        start += listBuff->size;
+    start += listBuff->left_pos + 1;
 
-    if (start < (valueBuff->left_pos + 1) || start > (valueBuff->right_pos - 1)) {
+    if (start < (listBuff->left_pos + 1) || start > (listBuff->right_pos - 1)) {
         setLastError("index out of range");
         return false;
     }
 
     if (stop < 0)
-        stop += valueBuff->size;
-    stop += valueBuff->left_pos + 1;
+        stop += listBuff->size;
+    stop += listBuff->left_pos + 1;
 
-    if (stop < (valueBuff->left_pos + 1) || stop > (valueBuff->right_pos - 1)) {
+    if (stop < (listBuff->left_pos + 1) || stop > (listBuff->right_pos - 1)) {
         setLastError("index out of range");
         return false;
     }
     if (start > stop) {
-        start = valueBuff->size;
+        start = listBuff->right_pos - 1;
     }
 
     int removeCount = 0;
-    for (int i = valueBuff->left_pos+1; i < valueBuff->right_pos; ++i) {
+    for (int i = listBuff->left_pos + 1; i < listBuff->right_pos; ++i) {
         if (i < start || i > stop) {
             std::string selement;
             ListElementKey::makeListElementKey(m_listname, i, selement);
@@ -333,9 +334,9 @@ bool TList::ltrim(int start, int stop)
 
     // update the valueList
     ListValueBuffer update;
-    update.size = valueBuff->size - removeCount;
-    update.left_pos = start;
-    update.right_pos = stop;
+    update.size = listBuff->size - removeCount;
+    update.left_pos = start - 1;
+    update.right_pos = stop + 1;
 
     std::string newValue;
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
