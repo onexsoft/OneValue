@@ -80,10 +80,11 @@ bool TList::lindex(int index, std::string* value)
         return false;
     }
 
-    std::string keyTmp;
-    ListElementKey::makeListElementKey(m_listname, index, keyTmp);
-    m_db->value(XObject(keyTmp.data(), keyTmp.size()), *value);
-    return value;
+    std::string selement;
+    ListElementKey::makeListElementKey(m_listname, index, selement);
+    XObject keyTmp(selement.data(), selement.size());
+    m_db->value(keyTmp, *value);
+    return true;
 }
 
 int TList::llen(void)
@@ -120,17 +121,17 @@ bool TList::lpop(std::string* value)
         return false;
     }
 
-    std::string keyTmp;
-    ListElementKey::makeListElementKey(m_listname, listBuff->left_pos + 1, keyTmp);
+    std::string selement;
+    ListElementKey::makeListElementKey(m_listname, listBuff->left_pos + 1, selement);
 
+    XObject keyTmp(selement.data(), selement.size());
     // get the value
-    m_db->value(XObject(keyTmp.data(), keyTmp.size()), *value);
+    m_db->value(keyTmp, *value);
     // del the value
-    m_db->remove(XObject(keyTmp.data(), keyTmp.size()));
+    m_db->remove(keyTmp);
 
     // update the valueList
     ListValueBuffer update;
-    update.counter = listBuff->counter - 1;
     update.size = listBuff->size - 1;
     update.left_pos = listBuff->left_pos + 1;
     update.right_pos = listBuff->right_pos;
@@ -139,9 +140,8 @@ bool TList::lpop(std::string* value)
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
     m_db->setValue(key, XObject(newValue.data(), newValue.size()));
 
-    return value;
+    return true;
 }
-
 
 int TList::lpush(const std::string &value)
 {
@@ -152,7 +152,6 @@ int TList::lpush(const std::string &value)
     std::string oldValue;
     if (!m_db->value(key, oldValue)) {
         ListValueBuffer listBuf;
-        listBuf.counter = 0;
         listBuf.size = 0;
         listBuf.left_pos = 0;
         listBuf.right_pos = 1;
@@ -169,7 +168,6 @@ int TList::lpush(const std::string &value)
     m_db->setValue(data_key, data_val);
 
     ListValueBuffer update;
-    update.counter = valueBuff->counter + 1;
     update.size = valueBuff->size + 1;
     update.left_pos = valueBuff->left_pos - 1;
     update.right_pos = valueBuff->right_pos;
@@ -202,7 +200,6 @@ int TList::lpushx(const std::string &value)
     m_db->setValue(data_key, data_val);
 
     ListValueBuffer update;
-    update.counter = valueBuff->counter + 1;
     update.size = valueBuff->size + 1;
     update.left_pos = valueBuff->left_pos - 1;
     update.right_pos = valueBuff->right_pos;
@@ -242,12 +239,12 @@ bool TList::lrange(int start, int stop, stringlist *result)
             setLastError("index out of range");
             return false;
         }
-        std::string keyTmp;
-        ListElementKey::makeListElementKey(m_listname, index, keyTmp);
-        std::string val_;
-        XObject xobKey(keyTmp.data(), keyTmp.size());
-        m_db->value(xobKey, val_);
-        result->push_back(val_);
+        std::string selement;
+        ListElementKey::makeListElementKey(m_listname, index, selement);
+        std::string get_value;
+        XObject keyTmp(selement.data(), selement.size());
+        m_db->value(keyTmp, get_value);
+        result->push_back(get_value);
     }
     return true;
 }
@@ -276,7 +273,11 @@ bool TList::lset(int index, const std::string &value)
     
     std::string selement;
     ListElementKey::makeListElementKey(m_listname, index, selement);
-    m_db->setValue(XObject(selement.data(), selement.size()), XObject(value.data(), value.size()));
+
+    XObject data_key(selement.data(), selement.size());
+    XObject data_val(value.data(), value.size());
+    m_db->setValue(data_key, data_val);
+
     return true;
 }
 
@@ -324,15 +325,14 @@ bool TList::ltrim(int start, int stop)
         if (i < start || i > stop) {
             std::string selement;
             ListElementKey::makeListElementKey(m_listname, i, selement);
-            XObject elementKey(selement.data(), selement.size());
-            m_db->remove(elementKey);
+            XObject keyTmp(selement.data(), selement.size());
+            m_db->remove(keyTmp);
             ++removeCount;
         }
     }
 
     // update the valueList
     ListValueBuffer update;
-    update.counter = valueBuff->counter - removeCount;
     update.size = valueBuff->size - removeCount;
     update.left_pos = start;
     update.right_pos = stop;
@@ -361,17 +361,17 @@ bool TList::rpop(std::string* value)
         return false;
     }
 
-    std::string keyTmp;
-    ListElementKey::makeListElementKey(m_listname, valueBuff->right_pos - 1, keyTmp);
+    std::string selement;
+    ListElementKey::makeListElementKey(m_listname, valueBuff->right_pos - 1, selement);
 
+    XObject keyTmp(selement.data(), selement.size());
     // get the value
-    m_db->value(XObject(keyTmp.data(), keyTmp.size()), *value);
+    m_db->value(keyTmp, *value);
     // del the value
-    m_db->remove(XObject(keyTmp.data(), keyTmp.size()));
+    m_db->remove(keyTmp);
 
     // update the valueList
     ListValueBuffer update;
-    update.counter = valueBuff->counter - 1;
     update.size = valueBuff->size - 1;
     update.left_pos = valueBuff->left_pos;
     update.right_pos = valueBuff->right_pos - 1;
@@ -392,7 +392,6 @@ int TList::rpush(const std::string &value)
     std::string oldValue;
     if (!m_db->value(key, oldValue)) {
         ListValueBuffer init;
-        init.counter = 0;
         init.size = 0;
         init.left_pos = 0;
         init.right_pos = 1;
@@ -409,7 +408,6 @@ int TList::rpush(const std::string &value)
     m_db->setValue(data_key, data_val);
 
     ListValueBuffer update;
-    update.counter = valueBuff->counter + 1;
     update.size = valueBuff->size + 1;
     update.left_pos = valueBuff->left_pos;
     update.right_pos = valueBuff->right_pos + 1;
@@ -441,7 +439,6 @@ int TList::rpushx(const std::string &value)
     m_db->setValue(data_key, data_val);
 
     ListValueBuffer update;
-    update.counter = valueBuff->counter + 1;
     update.size = valueBuff->size + 1;
     update.left_pos = valueBuff->left_pos;
     update.right_pos = valueBuff->right_pos + 1;
@@ -454,21 +451,21 @@ int TList::rpushx(const std::string &value)
 
 void TList::lclear(void)
 {
-    std::string slistkey;
-    ListKey::makeListKey(m_listname, slistkey);
-    XObject listkey(slistkey.data(), slistkey.size());
+    std::string buf;
+    ListKey::makeListKey(m_listname, buf);
+    XObject key(buf.data(), buf.size());
 
-    std::string val;
-    if (!m_db->value(listkey, val)) {
+    std::string valueTmp;
+    if (!m_db->value(key, valueTmp)) {
         return;
     }
 
-    ListValueBuffer* valueBuff = (ListValueBuffer*)val.data();
-    for (int i = 0; i < valueBuff->size; ++i) {
+    ListValueBuffer* valueBuff = (ListValueBuffer*)valueTmp.data();
+    for (int i = valueBuff->left_pos + 1; i < valueBuff->right_pos; ++i) {
         std::string selement;
-        ListElementKey::makeListElementKey(m_listname, valueBuff->at(i), selement);
-        XObject elementKey(selement.data(), selement.size());
-        m_db->remove(elementKey);
+        ListElementKey::makeListElementKey(m_listname, i, selement);
+        XObject keyTmp(selement.data(), selement.size());
+        m_db->remove(keyTmp);
     }
-    m_db->remove(listkey);
+    m_db->remove(key);
 }
