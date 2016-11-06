@@ -66,8 +66,6 @@ struct ListElementKey
 
 struct ListValueBuffer
 {
-    int size;
-
     int left_pos;
     int right_pos;
 };
