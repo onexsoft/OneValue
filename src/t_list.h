@@ -67,14 +67,9 @@ struct ListElementKey
 struct ListValueBuffer
 {
     int size;
-    int counter;
 
     int left_pos;
     int right_pos;
-    
-    int* intBuffer(void) const { return (int*)(this+1); }
-    int at(int index) const { return intBuffer()[index]; }
-    int bufferSize(void) const { return sizeof(*this) + size * sizeof(int); }
 };
 
 class TList
