@@ -179,7 +179,7 @@ int TList::lpush(const std::string &value)
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
     m_db->setValue(key, XObject(newValue.data(), newValue.size()));
 
-    int size = update->right_pos - update->left_pos - 1;
+    int size = update.right_pos - update.left_pos - 1;
 
     return size; 
 }
@@ -213,7 +213,7 @@ int TList::lpushx(const std::string &value)
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
     m_db->setValue(key, XObject(newValue.data(), newValue.size()));
 
-    int size = update->right_pos - update->left_pos - 1;
+    int size = update.right_pos - update.left_pos - 1;
 
     return size;
 }
@@ -429,7 +429,7 @@ int TList::rpush(const std::string &value)
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
     m_db->setValue(key, XObject(newValue.data(), newValue.size()));
 
-    int size = update->right_pos - update->left_pos - 1;
+    int size = update.right_pos - update.left_pos - 1;
 
     return size;
 }
@@ -462,7 +462,7 @@ int TList::rpushx(const std::string &value)
     newValue.assign((char *)&update, sizeof(ListValueBuffer));
     m_db->setValue(key, XObject(newValue.data(), newValue.size()));
 
-    int size = update->right_pos - update->left_pos - 1;
+    int size = update.right_pos - update.left_pos - 1;
 
     return size;
 }
