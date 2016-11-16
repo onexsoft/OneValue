@@ -86,8 +86,6 @@ private:
     Event m_listener;
     EventLoop m_loop;
     TcpSocket m_socket;
-
-private:
     TcpServer(const TcpServer&);
     TcpServer& operator=(const TcpServer&);
 };

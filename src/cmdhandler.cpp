@@ -778,26 +778,26 @@ void onPFAddCommand(ClientPacket* packet, void*)
 {
     RedisProtoParseResult& r = packet->recvParseResult;
     if(r.tokenCount < 3){
-	packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
-	return;
+        packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
+        return;
     }
-    
+
     std::string val, str_register, store;
     XObject key = makeStringKey(r.tokens[1].s, r.tokens[1].len, store);
     LeveldbCluster* db = packet->proxy()->leveldbCluster();
-    
+
     string_mutex.lock(key);
     if(db->value(key, val)){
-	str_register = val;
+        str_register = val;
     }else{
-	str_register = "";
-    }    
-    
+        str_register = "";
+    }
+
     THyperLogLog log(10, str_register);
-    
+
     std::string result;
     for(int i = 2; i < r.tokenCount; ++i){
-	result = log.Add(r.tokens[i].s, r.tokens[i].len);
+        result = log.Add(r.tokens[i].s, r.tokens[i].len);
     }
     XObject value(result.data(), result.size());
 
@@ -820,33 +820,34 @@ void onPFCountCommand(ClientPacket* packet, void*)
     }
 
     LeveldbCluster* db = packet->proxy()->leveldbCluster();
-    
+
     std::string val, str_register, store;
     XObject key = makeStringKey(r.tokens[1].s, r.tokens[1].len, store);
     if(db->value(key, val)){
         str_register = val;
     }else{
-	packet->sendBuff.append("$-1\r\n");
+        packet->sendBuff.append("$-1\r\n");
     }
     THyperLogLog first_log(10, str_register);
-    
+
     for(int i = 2; i < r.tokenCount; ++i)
     {
-	std::string val, str_register, store;
+        std::string val, str_register, store;
         XObject key = makeStringKey(r.tokens[i].s, r.tokens[i].len, store);
-    	if(db->value(key, val)){
+        if(db->value(key, val)){
             str_register = val;
-	}else{
-	    packet->sendBuff.append("$-1\r\n");
-	}
-	THyperLogLog log(10, str_register);
-	first_log.Merge(log);
+        }else{
+            packet->sendBuff.append("$-1\r\n");
+        }
+        THyperLogLog log(10, str_register);
+        first_log.Merge(log);
     }
+
     std::string estimate = to_string(first_log.Estimate());
     packet->sendBuff.appendFormatString("$%d\r\n", estimate.size());
     packet->sendBuff.append(estimate.data(), estimate.size());
     packet->sendBuff.append("\r\n");
-    
+
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
 
@@ -854,47 +855,50 @@ void onPFMergeCommand(ClientPacket * packet, void*)
 {
     RedisProtoParseResult& r = packet->recvParseResult;
     if(r.tokenCount < 3){
-	packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
-	return;
+	    packet->setFinishedState(ClientPacket::WrongNumberOfArguments);
+	    return;
     }
 
     LeveldbCluster* db = packet->proxy()->leveldbCluster();
-    
+
     std::string store1, str_register1, val1;
     XObject key1 = makeStringKey(r.tokens[1].s, r.tokens[1].len, store1);
-  
+
     string_mutex.lock(key1);
     if(db->value(key1, val1)){
-	str_register1 = val1;
+        str_register1 = val1;
     }else{
-	// TODO: ERROR key does not exists
-	str_register1 = "";
+        packet->sendBuff.append("-Key does not exist\r\n");
+        packet->sendBuff.append("\r\n");
+        packet->setFinishedState(ClientPacket::RequestFinished);
+        return ;
     }
     THyperLogLog log1(10, str_register1);
-   
-    std::string result; 
-    for(int i = 2; i < r.tokenCount; ++i){
-	std::string store2, str_register2, val2;
-    	XObject key2 = makeStringKey(r.tokens[i].s, r.tokens[i].len, store2);
-    	if(db->value(key2, val2)){
-		str_register2 = val2;
-    	}else{
-		// TODO: ERROR key does not exists
-		str_register2 = "";
-    	}
 
-    	THyperLogLog log2(10, str_register2);
-	result = log1.Merge(log2);
+    std::string result;
+    for(int i = 2; i < r.tokenCount; ++i){
+        std::string store2, str_register2, val2;
+        XObject key2 = makeStringKey(r.tokens[i].s, r.tokens[i].len, store2);
+        if(db->value(key2, val2)){
+            str_register2 = val2;
+        }else{
+            packet->sendBuff.append("-Key does not exist\r\n");
+            packet->sendBuff.append("\r\n");
+            packet->setFinishedState(ClientPacket::RequestFinished);
+            return ;
+        }
+        THyperLogLog log2(10, str_register2);
+        result = log1.Merge(log2);
     }
-   
+
     XObject value(result.data(), result.size());
     if (db->setValue(key1, value)) {
-    	packet->sendBuff.append("+OK\r\n");
+        packet->sendBuff.append("+OK\r\n");
     } else {
         packet->sendBuff.append("-ERR Unknown error\r\n");
     }
     string_mutex.unlock(key1);
-    
+
     packet->setFinishedState(ClientPacket::RequestFinished);
 }
 
